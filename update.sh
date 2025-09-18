@@ -5,8 +5,8 @@
 
 set -e
 
-# Colors
-CYAN='\033[0;36m'
+# Colors - Orange Theme
+ORANGE='\033[38;5;214m'
 WHITE='\033[1;37m'
 GRAY='\033[0;37m'
 GREEN='\033[0;32m'
@@ -18,12 +18,12 @@ NC='\033[0m'
 # Print header
 print_header() {
     printf "\n"
-    printf "${CYAN}███╗   ███╗ ██████╗ ███╗   ██╗██╗ ██████╗    ███████╗██╗  ██╗${NC}\n"
-    printf "${CYAN}████╗ ████║██╔═══██╗████╗  ██║██║██╔═══██╗   ██╔════╝██║  ██║${NC}\n"
-    printf "${CYAN}██╔████╔██║██║   ██║██╔██╗ ██║██║██║   ██║   ███████╗███████║${NC}\n"
-    printf "${CYAN}██║╚██╔╝██║██║   ██║██║╚██╗██║██║██║▄▄ ██║   ╚════██║██╔══██║${NC}\n"
-    printf "${CYAN}██║ ╚═╝ ██║╚██████╔╝██║ ╚████║██║╚██████╔╝██╗███████║██║  ██║${NC}\n"
-    printf "${CYAN}╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝ ╚══▀▀═╝ ╚═╝╚══════╝╚═╝  ╚═╝${NC}\n"
+    printf "${ORANGE} ██████╗ █████╗ ████████╗ ██████╗ ██████╗ ███████╗${NC}\n"
+    printf "${ORANGE}██╔════╝██╔══██╗╚══██╔══╝██╔═══██╗██╔══██╗██╔════╝${NC}\n"
+    printf "${ORANGE}██║     ███████║   ██║   ██║   ██║██████╔╝███████╗${NC}\n"
+    printf "${ORANGE}██║     ██╔══██║   ██║   ██║   ██║██╔═══╝ ╚════██║${NC}\n"
+    printf "${ORANGE}╚██████╗██║  ██║   ██║   ╚██████╔╝██║     ███████║${NC}\n"
+    printf "${ORANGE} ╚═════╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝     ╚══════╝${NC}\n"
     printf "\n"
     printf "                    ${WHITE}Server Monitor${NC}\n"
     printf "\n"
@@ -38,13 +38,13 @@ print_section() {
     local title_len=${#title}
     local dash_count=$((total_width - ${#prefix} - ${#suffix} - title_len))
     if [ $dash_count -lt 0 ]; then dash_count=0; fi
-    printf "${CYAN}${prefix}${WHITE}%s${CYAN}%s${suffix}${NC}\n" "$title" "$(printf '%*s' $dash_count | sed 's/ /-/g')"
+    printf "${ORANGE}${prefix}${WHITE}%s${ORANGE}%s${suffix}${NC}\n" "$title" "$(printf '%*s' $dash_count | sed 's/ /-/g')"
 }
 
 # Print section end
 print_section_end() {
     local total_width=70
-    printf "${CYAN}+%s+${NC}\n" "$(printf '%*s' $((total_width-2)) | sed 's/ /-/g')"
+    printf "${ORANGE}+%s+${NC}\n" "$(printf '%*s' $((total_width-2)) | sed 's/ /-/g')"
 }
 
 # Print status
