@@ -258,9 +258,13 @@ send_update_stats() {
     local cpu_cores=$(get_cpu_cores)
     local total_memory=$(get_total_memory)
     local total_storage=$(get_total_storage)
+    local hostname=$(hostname)
     
-    # Prepare JSON data with server specifications
-    local json_data="{\"platform\":\"$platform\",\"architecture\":\"$arch\",\"type\":\"update\",\"timestamp\":\"$(date +%s)\",\"cpu_cores\":$cpu_cores,\"total_memory\":$total_memory,\"total_storage\":$total_storage}"
+    # Get current version for catops_version
+    local catops_version=$(catops --version 2>/dev/null | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | sed 's/v//' || echo "0.0.0")
+    
+    # Prepare JSON data with correct format for new backend
+    local json_data="{\"timestamp\":\"$(date +%s)\",\"user_token\":\"\",\"server_info\":{\"hostname\":\"$hostname\",\"os_type\":\"$platform\",\"os_version\":\"$platform\",\"catops_version\":\"$catops_version\"},\"cpu_cores\":$cpu_cores,\"total_memory\":$total_memory,\"total_storage\":$total_storage}"
 
     # Send stats silently (don't interrupt update) - using CLI install endpoint
     curl -s -X POST "https://api.catops.io/api/cli/install" \
