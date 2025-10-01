@@ -75,8 +75,12 @@ check_for_updates() {
     # Get current version from catops binary
     CURRENT_VERSION=$(catops --version 2>/dev/null | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | sed 's/v//' || echo "0.0.0")
     
-    # Check API for latest version
-    API_RESPONSE=$(curl -s "https://api.catops.io/api/versions/check" 2>/dev/null || echo "{}")
+    # Check API for latest version with proper headers
+    API_RESPONSE=$(curl -s "https://api.catops.io/api/versions/check" \
+        -H "User-Agent: CatOps-CLI/1.0.0" \
+        -H "X-Platform: $(uname -s | tr '[:upper:]' '[:lower:]')" \
+        -H "X-Version: 1.0.0" \
+        2>/dev/null || echo "{}")
     LATEST_VERSION=$(echo "$API_RESPONSE" | grep -o '"latest_version":"[^"]*"' | cut -d'"' -f4 2>/dev/null || echo "0.0.0")
     
     if [ "$LATEST_VERSION" = "0.0.0" ] || [ "$LATEST_VERSION" = "$CURRENT_VERSION" ]; then
@@ -258,8 +262,8 @@ send_update_stats() {
     # Prepare JSON data with server specifications
     local json_data="{\"platform\":\"$platform\",\"architecture\":\"$arch\",\"type\":\"update\",\"timestamp\":\"$(date +%s)\",\"cpu_cores\":$cpu_cores,\"total_memory\":$total_memory,\"total_storage\":$total_storage}"
 
-    # Send stats silently (don't interrupt update)
-    curl -s -X POST "https://api.catops.io/api/downloads/install" \
+    # Send stats silently (don't interrupt update) - using CLI install endpoint
+    curl -s -X POST "https://api.catops.io/api/cli/install" \
         -H "Content-Type: application/json" \
         -H "User-Agent: CatOps-CLI/1.0.0" \
         -H "X-Platform: $platform" \

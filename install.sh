@@ -554,10 +554,10 @@ send_install_stats() {
     log_message "DEBUG" "Sending JSON data: $data"
     
     # Log installation request start
-    log_message "INFO" "Installation request started - URL: https://api.catops.io/api/downloads/install"
-    
+    log_message "INFO" "Installation request started - URL: https://api.catops.io/api/cli/install"
+
     # Send stats and get response
-    local response=$(curl -s -X POST "https://api.catops.io/api/downloads/install" \
+    local response=$(curl -s -X POST "https://api.catops.io/api/cli/install" \
         -H "Content-Type: application/json" \
         -H "User-Agent: CatOps-CLI/1.0.0" \
         -H "X-Platform: $platform" \
@@ -571,43 +571,64 @@ send_install_stats() {
         
         # Check if response contains success field (same as Go: result["success"] == true)
         if echo "$response" | grep -q '"success"'; then
-            # Extract server_token from data.server_token (same as Go: data["server_token"])
-            local server_token=""
-            
+            # Extract user_token and server_id from data (same as Go code)
+            local user_token=""
+            local server_id=""
+
             # Method 1: Use jq for proper JSON parsing (same logic as Go)
             if command -v jq >/dev/null 2>&1; then
-                server_token=$(echo "$response" | jq -r '.data.server_token // empty' 2>/dev/null)
-                if [ -n "$server_token" ]; then
-                    log_message "INFO" "server_token extracted with jq: $server_token"
+                user_token=$(echo "$response" | jq -r '.data.user_token // empty' 2>/dev/null)
+                server_id=$(echo "$response" | jq -r '.data.id // empty' 2>/dev/null)
+                if [ -n "$user_token" ]; then
+                    log_message "INFO" "user_token extracted with jq: $user_token"
+                fi
+                if [ -n "$server_id" ]; then
+                    log_message "INFO" "server_id extracted with jq: $server_id"
                 fi
             fi
-            
+
             # Method 2: Fallback to grep if jq not available
-            if [ -z "$server_token" ]; then
-                server_token=$(echo "$response" | grep -o '"server_token":"[^"]*"' | cut -d'"' -f4)
-                if [ -n "$server_token" ]; then
-                    log_message "INFO" "server_token extracted with grep fallback: $server_token"
+            if [ -z "$user_token" ]; then
+                user_token=$(echo "$response" | grep -o '"user_token":"[^"]*"' | cut -d'"' -f4)
+                if [ -n "$user_token" ]; then
+                    log_message "INFO" "user_token extracted with grep fallback: $user_token"
                 fi
             fi
-            
-            if [ -n "$server_token" ]; then
-                # Save server_token to config (same as Go: cfg.ServerToken = serverToken)
+            if [ -z "$server_id" ]; then
+                server_id=$(echo "$response" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+                if [ -n "$server_id" ]; then
+                    log_message "INFO" "server_id extracted with grep fallback: $server_id"
+                fi
+            fi
+
+            if [ -n "$user_token" ] && [ -n "$server_id" ]; then
+                # Save user_token as auth_token and server_id to config (same as Go code)
                 local config_file="$HOME/.catops/config.yaml"
                 if [ -f "$config_file" ]; then
-                    # Add server_token to config if not already present
-                    if ! grep -q "server_token:" "$config_file"; then
-                        echo "server_token: $server_token" >> "$config_file"
-                        log_message "INFO" "server_token added to config: $server_token"
+                    # Add auth_token to config if not already present
+                    if ! grep -q "auth_token:" "$config_file"; then
+                        echo "auth_token: $user_token" >> "$config_file"
+                        log_message "INFO" "auth_token added to config: $user_token"
                     else
-                        # Update existing server_token
-                        sed -i.bak "s/server_token:.*/server_token: $server_token/" "$config_file"
-                        log_message "INFO" "server_token updated in config: $server_token"
+                        # Update existing auth_token
+                        sed -i.bak "s/auth_token:.*/auth_token: $user_token/" "$config_file"
+                        log_message "INFO" "auth_token updated in config: $user_token"
+                    fi
+
+                    # Add server_id to config if not already present
+                    if ! grep -q "server_id:" "$config_file"; then
+                        echo "server_id: $server_id" >> "$config_file"
+                        log_message "INFO" "server_id added to config: $server_id"
+                    else
+                        # Update existing server_id
+                        sed -i.bak "s/server_id:.*/server_id: $server_id/" "$config_file"
+                        log_message "INFO" "server_id updated in config: $server_id"
                     fi
                 else
                     log_message "ERROR" "Config file not found: $config_file"
                 fi
             else
-                log_message "WARNING" "server_token not found in response - tried jq and grep methods"
+                log_message "WARNING" "user_token or server_id not found in response - tried jq and grep methods"
                 log_message "WARNING" "Response structure: $(echo "$response" | head -c 200)..."
             fi
         else
