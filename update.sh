@@ -291,10 +291,14 @@ send_update_stats() {
 
 # Main function
 main() {
-    print_header
-    
+    # Don't print header when called from CLI (CLI already shows header)
+    # Only print header when script is run directly
+    if [ -z "$CATOPS_CLI_MODE" ]; then
+        print_header
+    fi
+
     print_section "Updating CatOps"
-    
+
     check_installation
     check_for_updates
     
