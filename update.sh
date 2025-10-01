@@ -260,8 +260,21 @@ send_update_stats() {
     local total_storage=$(get_total_storage)
     local hostname=$(hostname)
     
-    # Get current version for catops_version
-    local catops_version=$(catops --version 2>/dev/null | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | sed 's/v//' || echo "0.0.0")
+    # Get current version from backend API
+    local catops_version="0.0.0"  # Default fallback
+    
+    # Try to get version from backend API
+    local version_response=$(curl -s -X GET "https://api.catops.io/api/versions/check" \
+        -H "Content-Type: application/json" \
+        -H "User-Agent: CatOps-CLI/1.0.0" 2>/dev/null)
+    
+    if [ $? -eq 0 ] && [ -n "$version_response" ]; then
+        # Extract version from JSON response using grep and sed
+        local extracted_version=$(echo "$version_response" | grep -o '"version":"[^"]*"' | sed 's/"version":"//;s/"//')
+        if [ -n "$extracted_version" ] && [ "$extracted_version" != "null" ]; then
+            catops_version="$extracted_version"
+        fi
+    fi
     
     # Prepare JSON data with correct format for new backend
     local json_data="{\"timestamp\":\"$(date +%s)\",\"user_token\":\"\",\"server_info\":{\"hostname\":\"$hostname\",\"os_type\":\"$platform\",\"os_version\":\"$platform\",\"catops_version\":\"$catops_version\"},\"cpu_cores\":$cpu_cores,\"total_memory\":$total_memory,\"total_storage\":$total_storage}"

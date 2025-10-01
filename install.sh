@@ -535,10 +535,25 @@ send_install_stats() {
         if [ -n "$hostname" ]; then
             # Экранируем JSON
             local escaped_token=$(echo "$AUTH_TOKEN" | sed 's/"/\\"/g')
-            # Get CatOps version from version.txt
-            local catops_version="0.0.6"  # Default fallback
-            if [ -f "version.txt" ]; then
-                catops_version=$(cat version.txt | tr -d '\n\r')
+            # Get CatOps version from backend API
+            local catops_version="0.0.1"  # Default fallback
+            
+            # Try to get version from backend API
+            local version_response=$(curl -s -X GET "https://api.catops.io/api/versions/check" \
+                -H "Content-Type: application/json" \
+                -H "User-Agent: CatOps-CLI/1.0.0" 2>/dev/null)
+            
+            if [ $? -eq 0 ] && [ -n "$version_response" ]; then
+                # Extract version from JSON response using grep and sed
+                local extracted_version=$(echo "$version_response" | grep -o '"version":"[^"]*"' | sed 's/"version":"//;s/"//')
+                if [ -n "$extracted_version" ] && [ "$extracted_version" != "null" ]; then
+                    catops_version="$extracted_version"
+                    log_message "DEBUG" "Using version from backend API: $catops_version"
+                else
+                    log_message "DEBUG" "No version in API response, using default: $catops_version"
+                fi
+            else
+                log_message "DEBUG" "Failed to get version from API, using default: $catops_version"
             fi
             
             data="${data},\"user_token\":\"$escaped_token\",\"server_info\":{\"hostname\":\"$hostname\",\"os_type\":\"$platform\",\"os_version\":\"$platform\",\"catops_version\":\"$catops_version\"}"
