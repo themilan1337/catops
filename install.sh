@@ -593,7 +593,7 @@ send_install_stats() {
             # Method 1: Use jq for proper JSON parsing (same logic as Go)
             if command -v jq >/dev/null 2>&1; then
                 user_token=$(echo "$response" | jq -r '.data.user_token // empty' 2>/dev/null)
-                server_id=$(echo "$response" | jq -r '.data.id // empty' 2>/dev/null)
+                server_id=$(echo "$response" | jq -r '.data.server_id // empty' 2>/dev/null)
                 if [ -n "$user_token" ]; then
                     log_message "INFO" "user_token extracted with jq: $user_token"
                 fi
@@ -610,7 +610,7 @@ send_install_stats() {
                 fi
             fi
             if [ -z "$server_id" ]; then
-                server_id=$(echo "$response" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+                server_id=$(echo "$response" | grep -o '"server_id":"[^"]*"' | cut -d'"' -f4)
                 if [ -n "$server_id" ]; then
                     log_message "INFO" "server_id extracted with grep fallback: $server_id"
                 fi
