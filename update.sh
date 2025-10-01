@@ -277,7 +277,7 @@ send_update_stats() {
     fi
     
     # Prepare JSON data with correct format for new backend
-    local json_data="{\"timestamp\":\"$(date +%s)\",\"user_token\":\"\",\"server_info\":{\"hostname\":\"$hostname\",\"os_type\":\"$platform\",\"os_version\":\"$platform\",\"catops_version\":\"$catops_version\"},\"cpu_cores\":$cpu_cores,\"total_memory\":$total_memory,\"total_storage\":$total_storage}"
+    local json_data="{\"timestamp\":\"$(date +%s)\",\"platform\":\"$platform\",\"architecture\":\"$arch\",\"type\":\"update\",\"server_info\":{\"hostname\":\"$hostname\",\"os_type\":\"$platform\",\"os_version\":\"$platform\",\"catops_version\":\"$catops_version\"},\"cpu_cores\":$cpu_cores,\"total_memory\":$total_memory,\"total_storage\":$total_storage}"
 
     # Send stats silently (don't interrupt update) - using CLI install endpoint
     curl -s -X POST "https://api.catops.io/api/cli/install" \
