@@ -616,20 +616,10 @@ send_install_stats() {
                 fi
             fi
 
-            if [ -n "$user_token" ] && [ -n "$server_id" ]; then
-                # Save user_token as auth_token and server_id to config (same as Go code)
+            if [ -n "$server_id" ]; then
+                # Save server_id to config
                 local config_file="$HOME/.catops/config.yaml"
                 if [ -f "$config_file" ]; then
-                    # Add auth_token to config if not already present
-                    if ! grep -q "auth_token:" "$config_file"; then
-                        echo "auth_token: $user_token" >> "$config_file"
-                        log_message "INFO" "auth_token added to config: $user_token"
-                    else
-                        # Update existing auth_token
-                        sed -i.bak "s/auth_token:.*/auth_token: $user_token/" "$config_file"
-                        log_message "INFO" "auth_token updated in config: $user_token"
-                    fi
-
                     # Add server_id to config if not already present
                     if ! grep -q "server_id:" "$config_file"; then
                         echo "server_id: $server_id" >> "$config_file"
@@ -643,7 +633,7 @@ send_install_stats() {
                     log_message "ERROR" "Config file not found: $config_file"
                 fi
             else
-                log_message "WARNING" "user_token or server_id not found in response - tried jq and grep methods"
+                log_message "WARNING" "server_id not found in response - tried jq and grep methods"
                 log_message "WARNING" "Response structure: $(echo "$response" | head -c 200)..."
             fi
         else
