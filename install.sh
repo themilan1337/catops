@@ -541,7 +541,7 @@ send_install_stats() {
                 catops_version=$(cat version.txt | tr -d '\n\r')
             fi
             
-            data="${data},\"user_token\":\"$escaped_token\",\"server_info\":{\"hostname\":\"$hostname\",\"os_type\":\"$platform\",\"catops_version\":\"$catops_version\"}"
+            data="${data},\"user_token\":\"$escaped_token\",\"server_info\":{\"hostname\":\"$hostname\",\"os_type\":\"$platform\",\"os_version\":\"$platform\",\"catops_version\":\"$catops_version\"}"
             
             # Add server specifications
             data="${data},\"cpu_cores\":$cpu_cores,\"total_memory\":$total_memory,\"total_storage\":$total_storage"
